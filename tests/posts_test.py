@@ -1,25 +1,25 @@
-import requests
 import json
 import allure
 import pytest
-from config import Data
 from utils import read_file
+from services.api_service import APIClient
+from services.status_code import Status
 
 @allure.title("Obtener todos los Albumes")
 @allure.label("critical")
 @pytest.mark.smoke
 def test_get_all_albums() -> None:
-    response = requests.get(Data.BASE_URL + "/albums", timeout=10)
-    assert response.status_code == 200
+    response = APIClient.get("/albums")
+    Status.status_code_ok(response)
 
 @allure.title("Obtener un Album")
 @allure.label("critical")
 @pytest.mark.smoke
 def test_get_an_album() -> None:
-    response = requests.get(Data.BASE_URL + "/albums", timeout=10)
+    response = APIClient.get("/albums")
     albums = response.json() 
     title_content = [album['title'] for album in albums]
-    assert 'quidem molestiae enim' in title_content 
+    Status.check_message_expected('quidem molestiae enim',title_content)
 
 @allure.title("Crear un Post")
 @allure.label("critical")
@@ -30,5 +30,5 @@ def test_create_resource() -> None:
         'Content-Type': 'application/json',
         'Accept': 'application/json'
     }
-    response = requests.post(Data.BASE_URL + "/posts", data=payload, headers=headers, timeout=10)
-    assert response.status_code == 201
+    response = APIClient.post("/posts", data=payload, headers=headers)
+    Status.status_code_created(response)
